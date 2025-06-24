@@ -1,9 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.PROD
-    ? "https://habit-api.fly.dev/api"
-    : "http://localhost:3000/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://habit-api.fly.dev",
   headers: {
     "Content-Type": "application/json",
     "x-api-key": import.meta.env.VITE_API_KEY,

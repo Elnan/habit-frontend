@@ -9,5 +9,16 @@
   ],
   "env": {
     "VITE_API_URL": "https://habit-api.fly.dev/api"
-  }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=1, stale-while-revalidate"
+        }
+      ]
+    }
+  ]
 }
