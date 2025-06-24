@@ -1,0 +1,21 @@
+:root {
+  --base-color: #e6ede7;
+  --base-color-dark: #4f6850;
+  --accent-color: #bb5147;
+
+  --text-color: #2d2d2d;
+  --done-color: #d9f4e5;
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: "Arial", sans-serif;
+  background-color: var(--base-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}

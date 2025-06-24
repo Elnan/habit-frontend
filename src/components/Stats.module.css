@@ -1,0 +1,131 @@
+.stats {
+  padding: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wideCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  grid-column: 1 / -1;
+}
+
+.percentage {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--base-color-dark);
+}
+
+.bigNumber {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--base-color-dark);
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 1rem;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.timeOfDay {
+  font-size: 1.5rem;
+  color: var(--base-color-dark);
+}
+
+.consistentHabit {
+  margin-top: 1rem;
+}
+
+.habitName {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--base-color-dark);
+}
+
+.timeDistribution {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.bars {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 200px;
+  padding: 1rem;
+}
+
+.bars div {
+  width: 60px;
+  background: var(--base-color-dark);
+  min-height: 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.5rem;
+  color: white;
+  font-size: 0.8rem;
+  transition: height 0.3s ease;
+}
+
+.trendGraph {
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.trendBar {
+  flex: 1;
+  background: var(--base-color);
+  min-height: 4px;
+  border-radius: 4px;
+  position: relative;
+  transition: height 0.3s;
+}
+
+.trendDate {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  color: var(--text-color);
+}
+
+.noData {
+  color: var(--text-color);
+  opacity: 0.7;
+  text-align: center;
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}

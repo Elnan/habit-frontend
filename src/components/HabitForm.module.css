@@ -1,0 +1,157 @@
+.habitForm {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.error {
+  color: red;
+  margin-bottom: 0.5rem;
+}
+
+.success {
+  color: green;
+  margin-bottom: 0.5rem;
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.label {
+  display: inline-block;
+  color: var(--accent-color);
+  font-weight: 500;
+  background-color: var(--base-color);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  margin-bottom: 0.75rem;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--base-color-dark);
+  box-shadow: 0 0 0 2px rgba(var(--base-color-dark-rgb), 0.1);
+}
+
+.dayGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.day {
+  text-align: center;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  background: var(--base-color);
+  color: var(--accent-color);
+}
+
+.day.selected {
+  background: var(--base-color-dark);
+  color: white;
+}
+
+.buttonGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.button {
+  width: 100%;
+  padding: 1rem;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit {
+  background: var(--base-color-dark);
+}
+
+.delete {
+  background: var(--accent-color);
+}
+
+.delete:hover {
+  background-color: color-mix(in srgb, var(--accent-color) 80%, black);
+}
+
+@media (max-width: 767px) {
+  .modalContent {
+    width: 100%;
+    max-width: 100%;
+    padding: 1.5rem 1rem;
+    overflow-x: hidden;
+  }
+
+  .habitForm {
+    width: 100%;
+    padding: 0;
+  }
+
+  .form {
+    padding: 0;
+  }
+
+  .dayGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .day {
+    padding: 0.75rem 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  .input,
+  .textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .submit,
+  .delete {
+    position: sticky;
+    bottom: 1rem;
+    margin-top: 2rem;
+    border-radius: 25px;
+  }
+
+  .buttonGroup {
+    position: sticky;
+    bottom: 1rem;
+    padding: 1rem;
+    background: white;
+    margin-top: 2rem;
+    z-index: 2;
+    grid-template-columns: 1fr 1fr;
+  }
+}

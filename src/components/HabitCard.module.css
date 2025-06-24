@@ -1,0 +1,21 @@
+.card {
+  background-color: white;
+  border: 2px solid var(--base-color-dark);
+  padding: 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  transform: scale(1);
+}
+
+.card:hover {
+  background-color: var(--base-color);
+  transform: scale(1.02);
+}
+
+.done {
+  background-color: #d4dfd6;
+  opacity: 0.6;
+  text-decoration: line-through;
+  transform: scale(0.98);
+}
