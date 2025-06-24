@@ -101,7 +101,8 @@ function DailyChecklist() {
         streak: calculateStreak(habit, !habit.done),
       };
 
-      await habitService.update(id, {
+      // Change this line to use updateHabit instead of update
+      await habitService.updateHabit(id, {
         ...habit,
         done: !habit.done,
         stats: updatedStats,
@@ -122,6 +123,7 @@ function DailyChecklist() {
         setFading((prev) => ({ ...prev, [id]: false }));
       }, 400);
     } catch (err) {
+      console.error("Failed to toggle habit:", err);
       setFading((prev) => ({ ...prev, [id]: false }));
     }
   };

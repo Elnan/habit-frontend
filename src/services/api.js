@@ -10,24 +10,6 @@ const api = axios.create({
   },
 });
 
-// Improved error logging
-api.interceptors.response.use(
-  (response) => {
-    console.log(
-      `API Success [${response.config.method}] ${response.config.url}`
-    );
-    return response;
-  },
-  (error) => {
-    console.error(
-      `API Error [${error.config?.method}] ${error.config?.url}:`,
-      error.response?.status,
-      error.response?.data || error.message
-    );
-    return Promise.reject(error);
-  }
-);
-
 // Create habit service with common API calls
 export const habitService = {
   getAll: () => api.get("/habits"),
