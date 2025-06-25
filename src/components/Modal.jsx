@@ -11,6 +11,9 @@ export function Modal({ isOpen, onClose, children }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      if (modalRef.current) {
+        modalRef.current.style.transform = "translateY(0)";
+      }
     }
     return () => {
       document.body.style.overflow = "unset";
@@ -68,10 +71,13 @@ export function Modal({ isOpen, onClose, children }) {
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
+    <div
+      className={`${styles.modalOverlay} ${isOpen ? styles.open : ""}`}
+      onClick={onClose}
+    >
       <div
         ref={modalRef}
-        className={styles.modalContent}
+        className={`${styles.modalContent} ${isOpen ? styles.open : ""}`}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}

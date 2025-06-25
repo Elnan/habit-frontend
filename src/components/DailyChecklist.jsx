@@ -63,6 +63,7 @@ function DailyChecklist() {
   const [fading, setFading] = useState({}); // Tracks fade animation states
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [animatingHabits, setAnimatingHabits] = useState(new Set());
 
   // Fetch habits on component mount
   useEffect(() => {
@@ -89,43 +90,43 @@ function DailyChecklist() {
    * @param {string} id - Habit ID
    */
   const toggleDone = async (id) => {
-    const habit = habits.find((h) => h.id === id);
-    if (!habit) return;
+    if (animatingHabits.has(id)) return;
 
     try {
-      // Step 1: Start the completion animation
+      setAnimatingHabits((prev) => new Set(prev).add(id));
+
+      // First phase: Show completing state
       setHabits((prev) =>
         prev.map((h) => (h.id === id ? { ...h, isCompleting: true } : h))
       );
 
-      // Step 2: Wait for initial animation
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // Wait for visual feedback
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Step 3: Start the slide-out animation
-      setHabits((prev) =>
-        prev.map((h) =>
-          h.id === id ? { ...h, isCompleting: true, isCompleted: true } : h
-        )
-      );
-
-      // Step 4: Update in backend
+      // Update backend
+      const habit = habits.find((h) => h.id === id);
       await habitService.updateHabit(id, {
         ...habit,
         done: true,
       });
 
-      // Step 5: Remove from list after animation completes
-      setTimeout(() => {
-        setHabits((prev) => prev.filter((h) => h.id !== id));
-      }, 500);
+      // Remove from list
+      setHabits((prev) => prev.filter((h) => h.id !== id));
+      setAnimatingHabits((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     } catch (error) {
-      // Revert UI if failed
-      setHabits((prev) =>
-        prev.map((h) =>
-          h.id === id ? { ...h, isCompleting: false, isCompleted: false } : h
-        )
-      );
       console.error("Failed to toggle habit:", error);
+      setHabits((prev) =>
+        prev.map((h) => (h.id === id ? { ...h, isCompleting: false } : h))
+      );
+      setAnimatingHabits((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
