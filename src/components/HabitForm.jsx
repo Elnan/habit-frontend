@@ -23,7 +23,12 @@ const weekdays = [
  * @param {string} mode - Either 'new' or 'edit'
  * @param {Function} onSuccess - Callback function after successful save
  */
-export default function HabitForm({ habit = null, mode = "new", onSuccess }) {
+export default function HabitForm({
+  habit = null,
+  mode = "new",
+  onSuccess,
+  onClose,
+}) {
   // Form state management
   const [name, setName] = useState(habit?.name || "");
   const [description, setDescription] = useState(habit?.description || "");

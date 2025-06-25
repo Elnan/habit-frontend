@@ -38,10 +38,11 @@
 .input,
 .textarea {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #ccc;
   border-radius: 0.25rem;
   transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 16px;
 }
 
 .input:focus,
@@ -132,9 +133,9 @@
 
   .input,
   .textarea {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+    font-size: 16px;
+    padding: 1rem;
+    margin-bottom: 1rem;
   }
 
   .submit,

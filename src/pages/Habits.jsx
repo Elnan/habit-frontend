@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { habitService } from "../services/api";
 import HabitForm from "../components/HabitForm";
-import { useSwipeable } from "react-swipeable";
+import { Modal } from "../components/Modal";
 import styles from "./Habits.module.css";
 
 function Habits() {
@@ -33,13 +33,6 @@ function Habits() {
     setShowModal(false);
     setSelectedHabit(null);
   };
-
-  const swipeHandlers = useSwipeable({
-    onSwipedDown: () => setShowModal(false),
-    delta: 10,
-    preventDefaultTouchmoveEvent: true,
-    trackMouse: false,
-  });
 
   if (isLoading) {
     return <div>Laster...</div>;
@@ -88,27 +81,14 @@ function Habits() {
         +
       </button>
 
-      {showModal && (
-        <div className={styles.modal}>
-          <div
-            className={styles.modalOverlay}
-            onClick={() => setShowModal(false)}
-          />
-          <div {...swipeHandlers} className={styles.modalContent}>
-            <button
-              className={styles.closeButton}
-              onClick={() => setShowModal(false)}
-            >
-              ×
-            </button>
-            <HabitForm
-              habit={selectedHabit}
-              mode={selectedHabit ? "edit" : "new"}
-              onSuccess={handleFormSuccess}
-            />
-          </div>
-        </div>
-      )}
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+        <HabitForm
+          habit={selectedHabit}
+          mode={selectedHabit ? "edit" : "new"}
+          onSuccess={handleFormSuccess}
+          onClose={() => setShowModal(false)}
+        />
+      </Modal>
     </div>
   );
 }

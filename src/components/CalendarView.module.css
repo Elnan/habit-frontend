@@ -5,7 +5,7 @@
   width: 90%;
   max-width: 600px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 0 0.5rem; /* Add padding to prevent overflow */
 }
 
 .header {
@@ -27,10 +27,10 @@
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.5rem;
   text-align: center;
-  font-weight: 500;
+  padding: 0 0.25rem;
   margin-bottom: 0.5rem;
+  font-weight: 500;
 }
 
 .days {
@@ -38,19 +38,44 @@
   grid-template-columns: repeat(7, 1fr);
   gap: 0.25rem;
   margin-top: 1rem;
+  padding: 0 0.25rem;
 }
 
 .day {
-  aspect-ratio: 1;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
-  cursor: pointer;
+  padding: 0.25rem 0;
+  aspect-ratio: 1;
+}
+
+.dayCircle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px; /* Reduced from 32px */
+  height: 28px; /* Reduced from 32px */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
-  font-size: 0.9rem;
-  padding: 0.25rem;
+  gap: 2px;
+}
+
+.day span {
+  position: relative;
+  z-index: 2;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.day .completionRatio {
+  font-size: 0.7rem;
+  opacity: 0.8;
 }
 
 .day:hover {
@@ -64,10 +89,6 @@
   position: absolute;
   opacity: 0.3;
   z-index: 0;
-}
-
-.day span {
-  z-index: 1;
 }
 
 .emptyDay {

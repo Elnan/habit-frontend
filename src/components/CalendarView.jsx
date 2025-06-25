@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Modal } from "./Modal";
 import { useSwipeable } from "react-swipeable";
 import styles from "./CalendarView.module.css";
 import { entryService } from "../services/api";
@@ -125,17 +126,14 @@ export default function CalendarView({ habits }) {
    * Marks habits as done based on completion data
    */
   const getHabitsForDate = (date, habits) => {
-    const dateKey = date.toDateString();
-    const entry = monthEntries[dateKey];
+    if (!date) return [];
 
-    if (!entry) return [];
+    const dateString = date.toDateString();
+    const entry = monthEntries[dateString] || { completedHabits: [] };
 
-    // Scheduled habits for that day
-    return entry.scheduledHabits.map((scheduledHabit) => ({
-      ...scheduledHabit,
-      done: entry.completedHabits.some(
-        (completed) => completed.id === scheduledHabit.id
-      ),
+    return habits.map((habit) => ({
+      ...habit,
+      done: entry.completedHabits.some((h) => h.id === habit.id),
     }));
   };
 
@@ -224,45 +222,29 @@ export default function CalendarView({ habits }) {
       </div>
 
       {/* Detailed view for selected day */}
-      {selectedDate && (
-        <div
-          {...swipeHandlers}
-          className={`${styles.dayDetails} ${
-            !selectedDate ? styles.hidden : ""
-          }`}
-        >
-          <div className={styles.swipeIndicator} />
-          <div className={styles.dayHeader}>
-            <h3>
-              {selectedDate.toLocaleDateString("no", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
-            </h3>
-            <button
-              className={styles.closeButton}
-              onClick={() => setSelectedDate(null)}
-            >
-              ×
-            </button>
+      <Modal
+        isOpen={selectedDate !== null}
+        onClose={() => setSelectedDate(null)}
+      >
+        {selectedDate && (
+          <div className={styles.dayDetail}>
+            <h3>{selectedDate.toLocaleDateString("no-NB")}</h3>
+            <div className={styles.habitsList}>
+              {getHabitsForDate(selectedDate, habits).map((habit) => (
+                <div
+                  key={habit.id}
+                  className={`${styles.habitItem} ${
+                    habit.done ? styles.completed : ""
+                  }`}
+                >
+                  <span>{habit.name}</span>
+                  {habit.done ? "✓" : ""}
+                </div>
+              ))}
+            </div>
           </div>
-
-          <div className={styles.habitsList}>
-            {getHabitsForDate(selectedDate, habits).map((habit) => (
-              <div
-                key={habit.id}
-                className={`${styles.habitItem} ${
-                  habit.done ? styles.completed : ""
-                }`}
-              >
-                <span>{habit.name}</span>
-                {habit.done ? "✓" : ""}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }

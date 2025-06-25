@@ -89,42 +89,43 @@ function DailyChecklist() {
    * @param {string} id - Habit ID
    */
   const toggleDone = async (id) => {
-    setFading((prev) => ({ ...prev, [id]: true }));
+    const habit = habits.find((h) => h.id === id);
+    if (!habit) return;
 
     try {
-      const habit = habits.find((h) => h.id === id);
-      const updatedStats = {
-        ...habit.stats,
-        totalCompleted:
-          (habit.stats?.totalCompleted || 0) + (habit.done ? -1 : 1),
-        lastCompletedDate: habit.done ? null : new Date().toISOString(),
-        streak: calculateStreak(habit, !habit.done),
-      };
+      // Step 1: Start the completion animation
+      setHabits((prev) =>
+        prev.map((h) => (h.id === id ? { ...h, isCompleting: true } : h))
+      );
 
-      // Change this line to use updateHabit instead of update
+      // Step 2: Wait for initial animation
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // Step 3: Start the slide-out animation
+      setHabits((prev) =>
+        prev.map((h) =>
+          h.id === id ? { ...h, isCompleting: true, isCompleted: true } : h
+        )
+      );
+
+      // Step 4: Update in backend
       await habitService.updateHabit(id, {
         ...habit,
-        done: !habit.done,
-        stats: updatedStats,
+        done: true,
       });
 
+      // Step 5: Remove from list after animation completes
       setTimeout(() => {
-        setHabits((prev) =>
-          prev.map((h) =>
-            h.id === id
-              ? {
-                  ...h,
-                  done: !h.done,
-                  stats: updatedStats,
-                }
-              : h
-          )
-        );
-        setFading((prev) => ({ ...prev, [id]: false }));
-      }, 400);
-    } catch (err) {
-      console.error("Failed to toggle habit:", err);
-      setFading((prev) => ({ ...prev, [id]: false }));
+        setHabits((prev) => prev.filter((h) => h.id !== id));
+      }, 500);
+    } catch (error) {
+      // Revert UI if failed
+      setHabits((prev) =>
+        prev.map((h) =>
+          h.id === id ? { ...h, isCompleting: false, isCompleted: false } : h
+        )
+      );
+      console.error("Failed to toggle habit:", error);
     }
   };
 
@@ -170,7 +171,10 @@ function DailyChecklist() {
             key={habit.id}
             habit={habit}
             toggleDone={() => toggleDone(habit.id)}
-            fading={!!fading[habit.id]}
+            className={`
+              ${habit.isCompleting ? styles.completing : ""}
+              ${habit.isCompleted ? styles.completed : ""}
+            `}
           />
         ))}
       </div>
