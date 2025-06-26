@@ -74,13 +74,15 @@ export default function CalendarView({ habits }) {
     const dateKey = date.toDateString();
     const entry = monthEntries[dateKey];
 
-    if (!entry) return { completed: 0, total: 0, percentage: 0 };
+    if (!entry || !entry.scheduledHabits) {
+      return { completed: 0, total: 0, percentage: 0 };
+    }
 
-    return {
-      completed: entry.completedHabits.length,
-      total: entry.scheduledHabits.length,
-      percentage: entry.stats.completionRate,
-    };
+    const completed = entry.scheduledHabits.filter((h) => h.completed).length;
+    const total = entry.scheduledHabits.length;
+    const percentage = total > 0 ? (completed / total) * 100 : 0;
+
+    return { completed, total, percentage };
   };
 
   /**
@@ -91,10 +93,7 @@ export default function CalendarView({ habits }) {
    * - Low (1-49%): Orange
    * - None (0%): Gray
    */
-  const getCompletionColor = (stats) => {
-    if (!stats || stats.total === 0) return styles.none;
-
-    const percentage = stats.percentage;
+  const getCompletionClass = (percentage) => {
     if (percentage === 100) return styles.perfect;
     if (percentage >= 75) return styles.high;
     if (percentage >= 50) return styles.medium;
@@ -197,7 +196,7 @@ export default function CalendarView({ habits }) {
 
         {days.map(({ day, date }) => {
           const stats = getCompletionStats(date, habits);
-          const colorClass = getCompletionColor(stats);
+          const colorClass = getCompletionClass(stats.percentage);
 
           return (
             <div
@@ -210,7 +209,10 @@ export default function CalendarView({ habits }) {
               onClick={() => setSelectedDate(date)}
             >
               <span>{day}</span>
-              <div className={`${styles.completionIndicator} ${colorClass}`} />
+              <div
+                className={`${styles.completionIndicator} ${colorClass}`}
+                title={`${stats.completed}/${stats.total} habits completed`}
+              />
               {stats.total > 0 && (
                 <small className={styles.completionText}>
                   {stats.completed}/{stats.total}

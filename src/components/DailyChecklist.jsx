@@ -90,13 +90,15 @@ function DailyChecklist() {
       if (!habit) return;
 
       const isCompleting = !habit.done;
+      const today = new Date().toISOString().split("T")[0];
 
-      // Step 1: Start exit animation
+      // Optimistic UI update
       setHabits((prev) =>
         prev.map((h) =>
           h.id === id
             ? {
                 ...h,
+                done: isCompleting,
                 isCompleting,
                 animationState: isCompleting ? "completing" : "uncompleting",
               }
@@ -104,10 +106,42 @@ function DailyChecklist() {
         )
       );
 
-      // Step 2: Wait for exit animation
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // Get current entry for today
+      let currentEntry;
+      try {
+        const response = await entryService.getEntry(today);
+        currentEntry = response.data;
+      } catch (error) {
+        currentEntry = {
+          date: today,
+          scheduledHabits: [],
+          completedHabits: [],
+          stats: { completionRate: 0, streak: 0 },
+        };
+      }
 
-      // Step 3: Update backend
+      // Update scheduledHabits and completedHabits
+      const updatedEntry = {
+        ...currentEntry,
+        date: today,
+        scheduledHabits: getTodayHabits(habits).map((h) => ({
+          id: h.id,
+          name: h.name,
+          completed: h.id === id ? isCompleting : h.done,
+        })),
+        completedHabits: getTodayHabits(habits)
+          .filter((h) => (h.id === id ? isCompleting : h.done))
+          .map((h) => ({
+            id: h.id,
+            name: h.name,
+            completedAt: new Date().toISOString(),
+          })),
+      };
+
+      // Update entry in background
+      await entryService.updateEntry(today, updatedEntry);
+
+      // Update habit status
       await habitService.updateHabit(id, {
         ...habit,
         done: isCompleting,
@@ -119,43 +153,13 @@ function DailyChecklist() {
           streak: isCompleting ? (habit.stats?.streak || 0) + 1 : 0,
         },
       });
-
-      // Step 4: Start enter animation
-      setHabits((prev) =>
-        prev.map((h) =>
-          h.id === id
-            ? {
-                ...h,
-                done: isCompleting,
-                animationState: "entering",
-              }
-            : h
-        )
-      );
-
-      // Step 5: Complete enter animation
-      setTimeout(() => {
-        setHabits((prev) =>
-          prev.map((h) =>
-            h.id === id
-              ? {
-                  ...h,
-                  animationState: "entered",
-                }
-              : h
-          )
-        );
-        setAnimatingHabits((prev) => {
-          const next = new Set(prev);
-          next.delete(id);
-          return next;
-        });
-      }, 50);
     } catch (error) {
-      console.error("Failed to toggle habit:", error);
+      // Revert UI on error
       setHabits((prev) =>
-        prev.map((h) => (h.id === id ? { ...h, animationState: null } : h))
+        prev.map((h) => (h.id === id ? { ...h, done: !isCompleting } : h))
       );
+      console.error("Failed to update habit:", error);
+    } finally {
       setAnimatingHabits((prev) => {
         const next = new Set(prev);
         next.delete(id);
