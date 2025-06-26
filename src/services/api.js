@@ -28,6 +28,7 @@ export const entryService = {
     api.get(`/entries/month/${year}/${month}`),
   getEntry: (date) => api.get(`/entries/${date}`),
   updateEntry: (date, entry) => api.put(`/entries/${date}`, entry),
+  createEntry: (entry) => api.post("/entries", entry),
 };
 
 export { api };

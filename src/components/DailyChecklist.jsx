@@ -94,6 +94,25 @@ function DailyChecklist() {
 
     try {
       setAnimatingHabits((prev) => new Set(prev).add(id));
+      const habit = habits.find((h) => h.id === id);
+      const today = new Date().toISOString().split("T")[0];
+
+      // Get today's entry
+      let entry;
+      try {
+        const response = await entryService.getEntry(today);
+        entry = response.data;
+      } catch {
+        entry = {
+          date: today,
+          scheduledHabits: habits.map((h) => ({
+            id: h.id,
+            name: h.name,
+            timeOfDay: h.timeOfDay,
+          })),
+          completedHabits: [],
+        };
+      }
 
       // First phase: Show completing state
       setHabits((prev) =>
@@ -103,25 +122,49 @@ function DailyChecklist() {
       // Wait for visual feedback
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Update backend
-      const habit = habits.find((h) => h.id === id);
+      // Update completedHabits
+      if (habit.done) {
+        entry.completedHabits = entry.completedHabits.filter(
+          (h) => h.id !== id
+        );
+      } else {
+        entry.completedHabits.push({
+          id: habit.id,
+          name: habit.name,
+          completedAt: new Date().toISOString(),
+          streak: (habit.stats?.streak || 0) + 1,
+        });
+      }
+
+      // Save entry
+      if (entry.id) {
+        await entryService.updateEntry(today, entry);
+      } else {
+        await entryService.createEntry(entry);
+      }
+
+      // Update habit stats
       await habitService.updateHabit(id, {
         ...habit,
-        done: true,
+        done: !habit.done,
+        stats: {
+          ...habit.stats,
+          totalCompleted:
+            (habit.stats?.totalCompleted || 0) + (!habit.done ? 1 : -1),
+          lastCompletedDate: !habit.done ? new Date().toISOString() : null,
+          streak: !habit.done ? (habit.stats?.streak || 0) + 1 : 0,
+        },
       });
 
-      // Remove from list
-      setHabits((prev) => prev.filter((h) => h.id !== id));
-      setAnimatingHabits((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      // Refresh habits
+      const response = await habitService.getHabits();
+      setHabits(response.data || []);
     } catch (error) {
       console.error("Failed to toggle habit:", error);
       setHabits((prev) =>
         prev.map((h) => (h.id === id ? { ...h, isCompleting: false } : h))
       );
+    } finally {
       setAnimatingHabits((prev) => {
         const next = new Set(prev);
         next.delete(id);
@@ -174,7 +217,6 @@ function DailyChecklist() {
             toggleDone={() => toggleDone(habit.id)}
             className={`
               ${habit.isCompleting ? styles.completing : ""}
-              ${habit.isCompleted ? styles.completed : ""}
             `}
           />
         ))}
@@ -200,7 +242,9 @@ function DailyChecklist() {
               key={habit.id}
               habit={habit}
               toggleDone={() => toggleDone(habit.id)}
-              fading={!!fading[habit.id]}
+              className={`
+                ${habit.isCompleting ? styles.completing : ""}
+              `}
             />
           ))}
         </div>
