@@ -10,7 +10,7 @@ import styles from "./HabitCard.module.css";
  * @param {Object} habit - Habit data to display
  * @param {Function} toggleDone - Callback to toggle completion status
  */
-function HabitCard({ habit, toggleDone }) {
+function HabitCard({ habit, toggleDone, className = "" }) {
   // Calculate completion percentage
   const completionRate = habit.stats?.totalCompleted
     ? Math.round((habit.stats.totalCompleted / habit.days.length) * 100)
@@ -18,7 +18,7 @@ function HabitCard({ habit, toggleDone }) {
 
   return (
     <div
-      className={`${styles.card} ${habit.done ? styles.done : ""}`}
+      className={`${styles.card} ${habit.done ? styles.done : ""} ${className}`}
       onClick={toggleDone}
     >
       <h3>{habit.name}</h3>

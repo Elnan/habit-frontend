@@ -10,6 +10,20 @@ const api = axios.create({
   },
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized
+    }
+    if (!error.config.retry && error.response?.status >= 500) {
+      error.config.retry = true;
+      return api(error.config);
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Create habit service with common API calls
 export const habitService = {
   getAll: () => api.get("/habits"),

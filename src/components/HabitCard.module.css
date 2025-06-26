@@ -10,7 +10,6 @@
 
 .card:hover {
   background-color: var(--base-color);
-  transform: scale(1.02);
 }
 
 .done {

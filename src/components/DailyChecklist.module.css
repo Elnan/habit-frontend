@@ -29,6 +29,7 @@
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
   margin-block: 1rem;
+  transition: all 0.3s ease-out;
 }
 
 .toggleDone {
@@ -59,7 +60,7 @@
 }
 
 .habitItem {
-  transition: all 0.5s ease-out;
+  transition: all 0.3s ease-out;
 }
 
 .habitItem.isCompleting {
@@ -71,4 +72,34 @@
 .habitItem.isCompleting .habitName {
   text-decoration: line-through;
   color: #888;
+}
+
+.completing {
+  opacity: 0.6;
+  text-decoration: line-through;
+  transform: translateX(100%);
+}
+
+.uncompleting {
+  opacity: 0.6;
+  text-decoration: none;
+  transform: translateX(-100%);
+}
+
+.entering {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.entered {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.card {
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.habitCard {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }

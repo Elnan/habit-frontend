@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import HabitCard from "./HabitCard";
 import styles from "./DailyChecklist.module.css";
-import { habitService } from "../services/api";
+import { habitService, entryService } from "../services/api";
 
 /**
  * Calculates a priority score for habit sorting
@@ -58,10 +58,8 @@ function getTodayHabits(habits) {
  * - Handles habit completion toggling with animations
  */
 function DailyChecklist() {
-  // State for managing habits and UI
   const [habits, setHabits] = useState([]);
-  const [fading, setFading] = useState({}); // Tracks fade animation states
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Changed from object to boolean
   const [error, setError] = useState(null);
   const [animatingHabits, setAnimatingHabits] = useState(new Set());
 
@@ -82,89 +80,82 @@ function DailyChecklist() {
     fetchHabits();
   }, []);
 
-  /**
-   * Toggles habit completion status
-   * - Updates completion stats
-   * - Handles streak calculation
-   * - Manages fade animation
-   * @param {string} id - Habit ID
-   */
+  // Simplify toggleDone function
   const toggleDone = async (id) => {
     if (animatingHabits.has(id)) return;
+    setAnimatingHabits((prev) => new Set(prev).add(id));
 
     try {
-      setAnimatingHabits((prev) => new Set(prev).add(id));
       const habit = habits.find((h) => h.id === id);
-      const today = new Date().toISOString().split("T")[0];
+      if (!habit) return;
 
-      // Get today's entry
-      let entry;
-      try {
-        const response = await entryService.getEntry(today);
-        entry = response.data;
-      } catch {
-        entry = {
-          date: today,
-          scheduledHabits: habits.map((h) => ({
-            id: h.id,
-            name: h.name,
-            timeOfDay: h.timeOfDay,
-          })),
-          completedHabits: [],
-        };
-      }
+      const isCompleting = !habit.done;
 
-      // First phase: Show completing state
+      // Step 1: Start exit animation
       setHabits((prev) =>
-        prev.map((h) => (h.id === id ? { ...h, isCompleting: true } : h))
+        prev.map((h) =>
+          h.id === id
+            ? {
+                ...h,
+                isCompleting,
+                animationState: isCompleting ? "completing" : "uncompleting",
+              }
+            : h
+        )
       );
 
-      // Wait for visual feedback
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Step 2: Wait for exit animation
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // Update completedHabits
-      if (habit.done) {
-        entry.completedHabits = entry.completedHabits.filter(
-          (h) => h.id !== id
-        );
-      } else {
-        entry.completedHabits.push({
-          id: habit.id,
-          name: habit.name,
-          completedAt: new Date().toISOString(),
-          streak: (habit.stats?.streak || 0) + 1,
-        });
-      }
-
-      // Save entry
-      if (entry.id) {
-        await entryService.updateEntry(today, entry);
-      } else {
-        await entryService.createEntry(entry);
-      }
-
-      // Update habit stats
+      // Step 3: Update backend
       await habitService.updateHabit(id, {
         ...habit,
-        done: !habit.done,
+        done: isCompleting,
         stats: {
           ...habit.stats,
           totalCompleted:
-            (habit.stats?.totalCompleted || 0) + (!habit.done ? 1 : -1),
-          lastCompletedDate: !habit.done ? new Date().toISOString() : null,
-          streak: !habit.done ? (habit.stats?.streak || 0) + 1 : 0,
+            (habit.stats?.totalCompleted || 0) + (isCompleting ? 1 : -1),
+          lastCompletedDate: isCompleting ? new Date().toISOString() : null,
+          streak: isCompleting ? (habit.stats?.streak || 0) + 1 : 0,
         },
       });
 
-      // Refresh habits
-      const response = await habitService.getHabits();
-      setHabits(response.data || []);
+      // Step 4: Start enter animation
+      setHabits((prev) =>
+        prev.map((h) =>
+          h.id === id
+            ? {
+                ...h,
+                done: isCompleting,
+                animationState: "entering",
+              }
+            : h
+        )
+      );
+
+      // Step 5: Complete enter animation
+      setTimeout(() => {
+        setHabits((prev) =>
+          prev.map((h) =>
+            h.id === id
+              ? {
+                  ...h,
+                  animationState: "entered",
+                }
+              : h
+          )
+        );
+        setAnimatingHabits((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }, 50);
     } catch (error) {
       console.error("Failed to toggle habit:", error);
       setHabits((prev) =>
-        prev.map((h) => (h.id === id ? { ...h, isCompleting: false } : h))
+        prev.map((h) => (h.id === id ? { ...h, animationState: null } : h))
       );
-    } finally {
       setAnimatingHabits((prev) => {
         const next = new Set(prev);
         next.delete(id);
@@ -216,7 +207,7 @@ function DailyChecklist() {
             habit={habit}
             toggleDone={() => toggleDone(habit.id)}
             className={`
-              ${habit.isCompleting ? styles.completing : ""}
+              ${habit.animationState ? styles[habit.animationState] : ""}
             `}
           />
         ))}
@@ -243,7 +234,7 @@ function DailyChecklist() {
               habit={habit}
               toggleDone={() => toggleDone(habit.id)}
               className={`
-                ${habit.isCompleting ? styles.completing : ""}
+                ${habit.animationState ? styles[habit.animationState] : ""}
               `}
             />
           ))}
