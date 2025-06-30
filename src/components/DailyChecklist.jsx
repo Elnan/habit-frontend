@@ -39,12 +39,18 @@ function getTodayHabits(habits) {
   const today = days[new Date().getDay()];
 
   const filteredHabits = (habits || [])
-    .filter((habit) => habit?.days?.includes(today))
+    .filter((habit) => {
+      // Ensure habit and days array exists
+      if (!habit || !Array.isArray(habit.days)) return false;
+      // Check if habit is scheduled for today
+      return habit.days.includes(today);
+    })
     .map((habit) => ({
       ...habit,
       score: getHabitScore(habit, today),
+      done: habit.done || false, // Ensure done state is always defined
     }))
-    .sort((a, b) => b.score - a.score); // Sort by score descending
+    .sort((a, b) => b.score - a.score);
 
   return filteredHabits;
 }
@@ -59,7 +65,7 @@ function getTodayHabits(habits) {
  */
 function DailyChecklist() {
   const [habits, setHabits] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); // Changed from object to boolean
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [animatingHabits, setAnimatingHabits] = useState(new Set());
 
@@ -68,7 +74,24 @@ function DailyChecklist() {
     const fetchHabits = async () => {
       try {
         const response = await habitService.getHabits();
-        const habitsData = response.data || [];
+        const today = new Date().toISOString().split("T")[0];
+
+        // Get today's entry to check which habits are actually done today
+        let todayEntry;
+        try {
+          const entryResponse = await entryService.getEntry(today);
+          todayEntry = entryResponse.data;
+        } catch (error) {
+          todayEntry = { completedHabits: [] };
+        }
+
+        // Reset done state based on today's completions
+        const habitsData = (response.data || []).map((habit) => ({
+          ...habit,
+          done:
+            todayEntry.completedHabits?.some((h) => h.id === habit.id) || false,
+        }));
+
         setHabits(habitsData);
       } catch (err) {
         setError("Kunne ikke hente vaner");
